@@ -1,0 +1,418 @@
+import { Component, useState } from "react";
+import {
+  Head,
+  Notes,
+  themes,
+  Footer,
+  Steps,
+  Split,
+  SplitRight,
+} from "mdx-deck";
+import { Box } from "theme-ui";
+import { CodeSurfer, CodeSurferColumns, Step } from "code-surfer";
+import { shadesOfPurple } from "@code-surfer/themes";
+
+import Image01 from "./images/image1.png";
+import Image02 from "./images/image2.png";
+import JbPos from "./images/jb-pos.png";
+import Swc from "./images/swc-vs.jpeg";
+import ImageCp from "./components/ImageCp";
+
+export const theme = {
+  ...themes.dark,
+  colors: {
+    ...themes.dark.colors,
+    primary: "#F9B100",
+    background: "#2D2955",
+  },
+};
+
+<Head>
+  <title>Jubelio Sharing Session - introducing Jubelio POS V3</title>
+</Head>
+
+# Introducing Jubelio POS V3
+
+<ImageCp image={JbPos} />
+
+>
+
+>
+
+<code>(Press spacebar to continue)</code>
+
+---
+
+# Feature
+
+- ✅ Pembuatan Transaksi
+- ✅ Harga Coret
+- ✅ Promosi
+- ✅ Buku Harga
+
+---
+
+# Pembuatan Transaksi di POS
+
+<iframe
+  src="https://drive.google.com/file/d/13Mw3T8_tgJk4z3X1JQcun2bAf_alKVow/preview"
+  width="900"
+  height="480"
+  allow="autoplay"
+></iframe>
+
+---
+
+# Flow Pembuatan Transaksi
+
+import Transaksi from "./images/transaksi.png";
+
+<img src={Transaksi} style={{ height: "500px" }} />
+
+>
+
+>
+
+---
+
+# Harga Coret
+
+<iframe
+  src="https://drive.google.com/file/d/1CEUn_YqamoTBIljU6YVkOwYi-ugPlsjs/preview"
+  width="900"
+  height="480"
+  allow="autoplay"
+></iframe>
+
+---
+
+# Flow Harga Coret
+
+import HargaCoret from "./images/harga-coret.png";
+
+<img src={HargaCoret} style={{ height: "500px" }} />
+
+---
+
+# Fitur Promosi
+
+<Steps>
+
+- Diskon Minimum Kuantiti Barang
+
+- Diskon Minimum Pembelian
+
+- Barang Gratis dengan Minimum Pembelian
+
+</Steps>
+
+---
+
+# Promosi
+
+<code>Diskon Minimum Kuantiti Barang</code>
+
+>
+
+<iframe
+  src="https://drive.google.com/file/d/150w8vNTwz-nQFKZReGl-Xyg_is8VUiJB/preview"
+  width="760"
+  height="420"
+  allow="autoplay"
+></iframe>
+
+---
+
+# Promosi
+
+<code>Diskon Minimum Pembelian</code>
+
+>
+
+<iframe
+  src="https://drive.google.com/file/d/1XMaFIs86Bhbt5lu9vAA_qOmpK_THKmKo/preview"
+  width="760"
+  height="420"
+  allow="autoplay"
+></iframe>
+
+---
+
+# Promosi
+
+<code>Barang Gratis dengan Minimum Pembeliaan</code>
+
+>
+
+<iframe
+  src="https://drive.google.com/file/d/1xUM83QAA3rc9gaxIwyK5Zi1LA7ZG_Wk6/preview"
+  width="760"
+  height="420"
+  allow="autoplay"
+></iframe>
+
+---
+
+<CodeSurfer theme={shadesOfPurple}>
+
+```js 1:23
+// custom Hooks Promotions
+const { getTransactionPromotion, getPromotionItem } = usePromotions();
+
+const onGetTransactionPromo = React.useCallback(() => {
+  getTransactionPromotion(sales).then((result) => {
+    if (resultPromotion) {
+      dispatch(
+        setTransactionPromotion({
+          promotion: result,
+          processPromotion: resultPromotion,
+        })
+      );
+    }
+  });
+}, [listItemCart, customerInfo, resultPromotion]);
+
+React.useEffect(() => {
+  onGetTransactionPromo();
+}, [listItemCart, customerInfo, resultPromotion]);
+```
+
+```js: 1:22
+// file usePromotion.tsx
+// function to get promotion with rules Minimal Quantity
+const getPromotionItem = async (items: IItemCart[]): Promise<any> => {
+    const itemPromotions = [];
+    if (listPromotions && listPromotions.length > 0) {
+      for (const promotion of listPromotions) {
+        if (!validateDiscount(promotion, customerInfo as ICustomerInfo, currentHours)) continue;
+
+        let p = null;
+        if (promotion.promotion_type === PROMOTION_TYPES.MinimalQuantity) {
+          p = validateMinimalQuantity({
+            promotion,
+            itemCart: items,
+          });
+          if (p) itemPromotions.push(p);
+        }
+      }
+    }
+
+    return itemPromotions;
+  };
+```
+
+```js 1:28
+// Function to get Promotion with rules
+// Minimal Transaction, Free Item, Buy X Get Y
+  const getTransactionPromotion = async (sales: ISalesState): Promise<any> => {
+  const transactionPromotion = [];
+  if (listPromotions && listPromotions.length > 0) {
+    for (const promotion of listPromotions) {
+      if (!validateDiscount(promotion, customerInfo as ICustomerInfo, currentHours)) continue;
+
+      let p = null;
+      if (promotion.promotion_type === PROMOTION_TYPES.MinimalTransaction) {
+        p = checkMinimalTransaction({
+          promotion,
+          itemCart: sales.listItemCart,
+          location: location as ILocations,
+        });
+        if (p) transactionPromotion.push(p);
+      } else if (promotion.promotion_type === PROMOTION_TYPES.FreeItemTransaction) {
+        p = validatePromoFreeItems(sales, promotion, location as ILocations);
+        if (p) transactionPromotion.push(p);
+      } else if (promotion.promotion_type === PROMOTION_TYPES.BuyXGetY) {
+        p = validatePromoBuyXGetY(promotion, listItemCart);
+        if (p) transactionPromotion.push(p);
+      }
+    }
+  }
+
+  return transactionPromotion;
+  };
+```
+
+</CodeSurfer>
+
+---
+
+# Buku Harga
+
+<iframe
+  src="https://drive.google.com/file/d/1b3U2v43DK3KxHGx183C_rtC7McFfiXPt/preview"
+  width="760"
+  height="420"
+  allow="autoplay"
+></iframe>
+
+---
+
+# Flow Buku Harga
+
+import BukuHarga from "./images/buku-harga.png";
+
+## <img src={BukuHarga} style={{ height: "500px" }} />
+
+---
+
+# Technology
+
+<Steps>
+
+- React Typescript
+
+- ChakraUI - Component Library
+
+- SocketIO - Realtime update data from Omnichannel and Bakcoffice
+
+- SWC - Build tools
+
+- Redux Toolkit
+
+- Redux Persist - To Persist and rehydrate a redux store.
+
+</Steps>
+
+---
+
+<Steps>
+
+- Axios
+
+- Dexie.JS - IndexDB connector
+
+- Huksy, Eslint, standard-version and Prettier
+
+</Steps>
+
+---
+
+### Proses Download Data
+
+import DownloadData from "./images/download-data.png";
+
+<img src={DownloadData} style={{ height: "500px" }} />
+
+---
+
+### Jubelio POS Print Service
+
+import PrintService from "./images/print-service.png";
+
+<img src={PrintService} style={{ height: "500px" }} />
+
+---
+
+### Preview For Desktop App
+
+<iframe
+  src="https://drive.google.com/file/d/1Va89TskBmo2xds0BjN9X4w_898-Of7Gg/preview"
+  width="900"
+  height="500"
+  allow="autoplay"
+></iframe>
+
+---
+
+### Preview For Mobile Apps
+
+<iframe
+  src="https://drive.google.com/file/d/1Ya2qXG3-wk6D2cLCr_9epFU_T6Uubhcu/preview"
+  width="900"
+  height="500"
+  allow="autoplay"
+></iframe>
+
+---
+
+### How it works?
+
+<img
+  src="https://cdn.imgbin.com/15/1/3/imgbin-character-8NTPQD7ns8n4GAwwCXMv7CvYR.jpg
+"
+  style={{ height: "500px" }}
+/>
+
+---
+
+<CodeSurfer theme={shadesOfPurple}>
+
+```js 1:12
+// generate Raw Command ESC POS
+// result Uint8Array
+const data = await rawCommand({
+  paperSize: Number(printer.paperSize),
+  orderData: resOrder,
+  settingPrint: structSetting,
+  location,
+  profile,
+  posSetting: settings,
+  totalDetail: totalDetail as ITotalDetail,
+});
+```
+
+```js 1:23
+// Trigger Deeplink and checking user access from Mobile or Tablet
+if (isMobile()) {
+  const linker = DeepLinker({
+    onIgnored: function () {
+      setOrderPrint(resOrder);
+    },
+    onFallback: function () {
+      onOpenNotif();
+    },
+  });
+
+  return linker.openUrl(
+    `${config.POS_APP_PRINT}/${Buffer.from(data).toString("base64")}`
+  );
+}
+
+// send Raw Command ESC POS to Desktop POS Print Service
+// With Websocket
+return sendDataPrint(data, resOrder);
+```
+
+```js 1:22
+// Send Raw Command to Desktop POS Print Service
+const sendDataPrint = async (
+  data: IRawCommand,
+  resOrder: DetailOrderTransaction
+) => {
+  const socket = new WebSocket(config.WS_CONNECTION);
+  socket.onopen = () => socket.send(data);
+  socket.onmessage = (event) => {
+    const response = JSON.parse(event.data);
+    if (response && response.message === "error") setOrderPrint(resOrder);
+    if (response && response.message === "success") onOpenNotif();
+  };
+  // if socket is closed or not connected Show print dialog
+  socket.onclose = () => {
+    setOrderPrint(resOrder);
+    socket.close();
+    return;
+  };
+};
+```
+
+</CodeSurfer>
+
+---
+
+### Knowing what you don't know
+
+### is as important as knowing things
+
+---
+
+# Thank you!
+
+---
+
+# FAQ
+
+---
+
+```
+
+```
